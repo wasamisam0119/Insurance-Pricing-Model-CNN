@@ -1,8 +1,9 @@
 import numpy as np
 
-class PricingModel():
-    def __init__(self):
 
+class PricingModel:
+    def __init__(self):
+        pass
 
     def _preprocessor(self, X_raw):
         """Data preprocessing function.
@@ -23,7 +24,6 @@ class PricingModel():
         # YOUR CODE HERE
 
         return  # YOUR CLEAN DATA
-
 
     def fit(self, X_raw, y_raw):
         """Classifier training function.
@@ -46,6 +46,7 @@ class PricingModel():
         # X_clean = self._preprocessor(X_raw)
 
         # YOUR CODE HERE
+        pass
 
     def predict_proba(self, X_raw):
         """Classifier probability prediction function.
@@ -69,7 +70,8 @@ class PricingModel():
         # X_clean = self._preprocessor(X_raw)
 
         # YOUR CODE HERE
-        # REMEMBER TO INCLUDE ANY PRICING STRATEGY HERE. 
+        # REMEMBER TO INCLUDE ANY PRICING STRATEGY HERE.
+        pass
 
     def predict_premium(self, X_raw):
         """Predicts premiums based on the pricing model.
@@ -88,7 +90,8 @@ class PricingModel():
             values corresponding to the probability of beloning to the
             POSITIVE class (that had accidents)
         """
+        pass
 
     def save_model(self):
-        with open('part3_pricing_model.pickle', 'wb') as target:
+        with open("part3_pricing_model.pickle", "wb") as target:
             pickle.dump(self, target)

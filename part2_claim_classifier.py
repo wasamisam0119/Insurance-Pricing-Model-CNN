@@ -1,13 +1,14 @@
 import numpy as np
 import pickle
 
-class ClaimClassifier():
-    
+
+class ClaimClassifier:
     def __init__(self,):
         """
         Feel free to alter this as you wish, adding instance variables as
         necessary. 
         """
+        pass
 
     def _preprocessor(self, X_raw):
         """Data preprocessing function.
@@ -45,10 +46,11 @@ class ClaimClassifier():
         -------
         ?
         """
-        
+
         # REMEMBER TO HAVE THE FOLLOWING LINE SOMEWHERE IN THE CODE
         # X_clean = self._preprocessor(X_raw)
         # YOUR CODE HERE
+        pass
 
     def predict(self, X_raw):
         """Classifier probability prediction function.
@@ -72,7 +74,7 @@ class ClaimClassifier():
         # X_clean = self._preprocessor(X_raw)
 
         # YOUR CODE HERE
-        
+
         return  # YOUR NUMPY ARRAY
 
     def evaluate_architecture(self):
@@ -84,11 +86,11 @@ class ClaimClassifier():
         You can use external libraries such as scikit-learn for this
         if necessary.
         """
+        pass
 
     def save_model(self):
-        with open('part2_claim_classifier.pickle', 'wb') as target:
+        with open("part2_claim_classifier.pickle", "wb") as target:
             pickle.dump(self, target)
-
 
 
 def ClaimClassifierHyperParameterSearch():  # ENSURE TO ADD IN WHATEVER INPUTS YOU DEEM NECESSARRY TO THIS FUNCTION
@@ -99,5 +101,5 @@ def ClaimClassifierHyperParameterSearch():  # ENSURE TO ADD IN WHATEVER INPUTS Y
 
     The function should return your optimised hyper-parameters. 
     """
-    
-    return # Return the chosen hyper parameters
+
+    return  # Return the chosen hyper parameters
