@@ -162,8 +162,8 @@ class LinearLayer(Layer):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        self._W = None
-        self._b = None
+        self._W = xavier_init((n_in, n_out))  # Dim W n_in * n_out
+        self._b = xavier_init(n_out)  # Dim b n_out * 1
 
         self._cache_current = None
         self._grad_W_current = None
@@ -189,7 +189,9 @@ class LinearLayer(Layer):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-
+        output = x.dot(self._W) + self._b  # Wx + b
+        self._cache_current = x  # We need to store the input in order to compute the partial derivative w.r.to them.
+        return output
         #######################################################################
         #                       ** END OF YOUR CODE **
         #######################################################################
@@ -211,7 +213,9 @@ class LinearLayer(Layer):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-
+        self._grad_W_current = self._cache_current.T.dot(grad_z)  # X transpose dot Gradient
+        self._grad_b_current = np.sum(grad_z, axis=0)  # Column vector 1 dot Gradient (np.sum is equivalent with axis=0)
+        return grad_z.dot(self._W.T)  # Gradient of loss with respect to inputs
         #######################################################################
         #                       ** END OF YOUR CODE **
         #######################################################################
@@ -227,7 +231,8 @@ class LinearLayer(Layer):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-
+        self._W -= learning_rate * self._grad_W_current
+        self._b -= learning_rate * self._grad_b_current
         #######################################################################
         #                       ** END OF YOUR CODE **
         #######################################################################
@@ -550,4 +555,5 @@ def example_main():
 
 
 if __name__ == "__main__":
-    example_main()
+    pass
+    # example_main()
