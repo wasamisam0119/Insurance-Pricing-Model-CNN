@@ -98,8 +98,8 @@ class SigmoidLayer(Layer):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        self._cache_current = np.exp(-x)
-        return 1 / (1 + self._cache_current)
+        self._cache_current = 1 / (1 + np.exp(-x))
+        return self._cache_current
         #######################################################################
         #                       ** END OF YOUR CODE **
         #######################################################################
@@ -108,8 +108,7 @@ class SigmoidLayer(Layer):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        # The gradient with respect of input is exp(-x) / (1 + exp(-x))^2
-        return (self._cache_current / (1 + self._cache_current)**2) * grad_z
+        return grad_z * (self._cache_current * (1 - self._cache_current))
         #######################################################################
         #                       ** END OF YOUR CODE **
         #######################################################################
@@ -559,8 +558,8 @@ if __name__ == "__main__":
     grad = np.array([[1, 2, 3], [4, 5, 6]])
     x = np.array([[1, 0, 1], [0, -1, 3]])
     test = 1 / (1 + np.exp(-x))
-    print(test)
-    print((np.exp(-x)/(1+np.exp(-x))**2))
-    print((np.exp(-x)/(1+np.exp(-x))**2) * test)
-    print((np.exp(-x) / (1 + np.exp(-x)) ** 2).T.dot(test))
+    derivative = test * (1 - test)
+    derivative2 = np.exp(-x) / ((1 + np.exp(-x))**2)
+    print(derivative)
+    print(derivative2)
     # example_main()
