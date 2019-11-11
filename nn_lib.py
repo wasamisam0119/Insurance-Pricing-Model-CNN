@@ -406,7 +406,10 @@ class Trainer(object):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        self._loss_layer = None
+        if loss_fun == 'mse':
+            self._loss_layer = MSELossLayer()
+        else:
+            self._loss_layer = CrossEntropyLossLayer()
         #######################################################################
         #                       ** END OF YOUR CODE **
         #######################################################################
@@ -427,7 +430,10 @@ class Trainer(object):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-
+        assert len(input_dataset) == len(target_dataset)
+        # Generate random indexes so we can shuffle the dataset.
+        random_indexes = np.random.permutation(len(input_dataset))
+        return input_dataset[random_indexes], target_dataset[random_indexes]
         #######################################################################
         #                       ** END OF YOUR CODE **
         #######################################################################
@@ -455,6 +461,15 @@ class Trainer(object):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
+        # Shuffle the provided dataset if shuffle_flag is True
+        if self.shuffle_flag:
+            input_dataset, target_dataset = self.shuffle(input_dataset, target_dataset)
+
+        assert len(input_dataset) == len(target_dataset)
+        # Mini-batch
+        for i in range(0, len(input_dataset), self.batch_size):
+            batch_input = input_dataset[i:(i + self.batch_size), :]
+            batch_target = target_dataset[i:(i + self.batch_size), :]
 
         #######################################################################
         #                       ** END OF YOUR CODE **
@@ -583,9 +598,4 @@ def example_main():
 
 
 if __name__ == "__main__":
-    network = MultiLayerNetwork(input_dim=3, neurons=[16, 3], activations=["relu", "identity"])
-    dat = np.loadtxt("iris.dat")
-    x = dat[:, :3]
-    y = network.forward(x)
-    print(network.backward(y))
-    # example_main()
+    example_main()
