@@ -498,7 +498,9 @@ class Trainer(object):
         #                       ** START OF YOUR CODE **
         #######################################################################
         # We use the network to predict the inputs
-        predicted_target = self.network.forward(input_dataset)
+        predicted_dataset = self.network.forward(input_dataset)
+        # We return the loss
+        return self.loss_fun.forward(predicted_dataset, target_dataset)
         #######################################################################
         #                       ** END OF YOUR CODE **
         #######################################################################
