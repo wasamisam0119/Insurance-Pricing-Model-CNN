@@ -524,7 +524,10 @@ class Preprocessor(object):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-
+        self.alpha, self.beta = (0, 1)  # we are scaling our data to lie in the interval [0, 1]
+        # calculate the min and the max of every column in the dataset and put them in lists
+        self.X_mins = data.min(axis=0)
+        self.X_maxs = data.max(axis=0)
         #######################################################################
         #                       ** END OF YOUR CODE **
         #######################################################################
@@ -542,7 +545,9 @@ class Preprocessor(object):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-
+        # using feature scaling from notes
+        scaled_data = self.alpha + (data - self.X_mins) * (self.beta - self.alpha) / (self.X_maxs - self.X_mins)
+        return scaled_data
         #######################################################################
         #                       ** END OF YOUR CODE **
         #######################################################################
@@ -560,7 +565,8 @@ class Preprocessor(object):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-
+        unscaled_data = (data - self.alpha) * (self.X_maxs - self.X_mins) / (self.beta - self.alpha) + self.X_mins
+        return unscaled_data
         #######################################################################
         #                       ** END OF YOUR CODE **
         #######################################################################
