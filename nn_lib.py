@@ -430,7 +430,6 @@ class Trainer(object):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        assert len(input_dataset) == len(target_dataset)
         # Generate random indexes so we can shuffle the dataset.
         random_indexes = np.random.permutation(len(input_dataset))
         return input_dataset[random_indexes], target_dataset[random_indexes]
@@ -461,15 +460,25 @@ class Trainer(object):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        # Shuffle the provided dataset if shuffle_flag is True
-        if self.shuffle_flag:
-            input_dataset, target_dataset = self.shuffle(input_dataset, target_dataset)
-
         assert len(input_dataset) == len(target_dataset)
-        # Mini-batch
-        for i in range(0, len(input_dataset), self.batch_size):
-            batch_input = input_dataset[i:(i + self.batch_size), :]
-            batch_target = target_dataset[i:(i + self.batch_size), :]
+
+        # We loop over the number of epoch
+        for epoch in range(self.nb_epoch):
+            # Shuffle the provided dataset if shuffle_flag is True
+            if self.shuffle_flag:
+                input_dataset, target_dataset = self.shuffle(input_dataset, target_dataset)
+
+            # Mini-batch
+            for i in range(0, len(input_dataset), self.batch_size):
+                batch_input = input_dataset[i:(i + self.batch_size), :]
+                batch_target = target_dataset[i:(i + self.batch_size), :]
+
+                # We evaluate the loss for this batch
+                loss = self.eval_loss(batch_input, batch_target).backward()
+                # Compute gradient of the network
+                self.network.backward(loss)
+                # Take a step in the gradient descent
+                self.network.update_params(self.learning_rate)
 
         #######################################################################
         #                       ** END OF YOUR CODE **
@@ -488,7 +497,8 @@ class Trainer(object):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-
+        # We use the network to predict the inputs
+        predicted_target = self.network.forward(input_dataset)
         #######################################################################
         #                       ** END OF YOUR CODE **
         #######################################################################
