@@ -261,7 +261,21 @@ class MultiLayerNetwork(object):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        self._layers = None
+        self._layers = []
+        # Creating the layers
+        for i in range(len(neurons)):
+            layer = LinearLayer(n_in=input_dim, n_out=neurons[i])
+            input_dim = neurons[i]  # We update the dim for the next layer
+
+            # We define the activation function for the layer
+            f_activation = None  # If the activation function is 'identity' we set it as None
+            if activations[i] == 'sigmoid':
+                f_activation = SigmoidLayer()
+            elif activations[i] == 'relu':
+                f_activation = ReluLayer()
+
+            # We append the tuple (layer, activation_function) to the layers of the network
+            self._layers.append((layer, f_activation))
         #######################################################################
         #                       ** END OF YOUR CODE **
         #######################################################################
@@ -280,7 +294,13 @@ class MultiLayerNetwork(object):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-
+        # We compute x for each layer in the network
+        for layer, f_activation in self._layers:
+            x = layer.forward(x)
+            # If we have an activation function we run it
+            if f_activation is not None:
+                f_activation.forward(x)
+        return x
         #######################################################################
         #                       ** END OF YOUR CODE **
         #######################################################################
@@ -303,7 +323,13 @@ class MultiLayerNetwork(object):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-
+        # We compute grad_z for each layer in the network starting by the last layer
+        for layer, f_activation in reversed(self._layers):
+            # We have to compute grad_z of the activation function if not 'identity' before grad_z of the layer
+            if f_activation is not None:
+                grad_z = f_activation.backward(grad_z)
+            grad_z = layer.backward(grad_z)
+        return grad_z
         #######################################################################
         #                       ** END OF YOUR CODE **
         #######################################################################
@@ -319,7 +345,9 @@ class MultiLayerNetwork(object):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-
+        # We update the parameters of each layer
+        for layer, f_activation in self._layers:
+            layer.update_params(learning_rate)
         #######################################################################
         #                       ** END OF YOUR CODE **
         #######################################################################
@@ -555,11 +583,9 @@ def example_main():
 
 
 if __name__ == "__main__":
-    grad = np.array([[1, 2, 3], [4, 5, 6]])
-    x = np.array([[1, 0, 1], [0, -1, 3]])
-    test = 1 / (1 + np.exp(-x))
-    derivative = test * (1 - test)
-    derivative2 = np.exp(-x) / ((1 + np.exp(-x))**2)
-    print(derivative)
-    print(derivative2)
+    network = MultiLayerNetwork(input_dim=3, neurons=[16, 3], activations=["relu", "identity"])
+    dat = np.loadtxt("iris.dat")
+    x = dat[:, :3]
+    y = network.forward(x)
+    print(network.backward(y))
     # example_main()
