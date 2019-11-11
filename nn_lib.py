@@ -474,9 +474,10 @@ class Trainer(object):
                 batch_target = target_dataset[i:(i + self.batch_size), :]
 
                 # We evaluate the loss for this batch
-                loss = self.eval_loss(batch_input, batch_target).backward()
+                self.eval_loss(batch_input, batch_target)
+                grad_loss = self._loss_layer.backward()
                 # Compute gradient of the network
-                self.network.backward(loss)
+                self.network.backward(grad_loss)
                 # Take a step in the gradient descent
                 self.network.update_params(self.learning_rate)
 
@@ -500,7 +501,7 @@ class Trainer(object):
         # We use the network to predict the inputs
         predicted_dataset = self.network.forward(input_dataset)
         # We return the loss
-        return self.loss_fun.forward(predicted_dataset, target_dataset)
+        return self._loss_layer.forward(predicted_dataset, target_dataset)
         #######################################################################
         #                       ** END OF YOUR CODE **
         #######################################################################
