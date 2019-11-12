@@ -1,5 +1,7 @@
 import numpy as np
 import pickle
+import pandas as pd
+import nn_lib
 
 
 class ClaimClassifier:
@@ -8,6 +10,14 @@ class ClaimClassifier:
         Feel free to alter this as you wish, adding instance variables as
         necessary. 
         """
+        self.data = np.genfromtxt('part2_data.csv',delimiter=',')
+        # print(self.data)
+        # np.read('part2_data.csv')
+        input_dim = 10
+        neurons = [16, 3]
+        activations = ["relu", "identity"]
+        self.claimNN = nn_lib.MultiLayerNetwork(input_dim, neurons, activations)
+
         pass
 
     def _preprocessor(self, X_raw):
@@ -27,8 +37,10 @@ class ClaimClassifier:
             A clean data set that is used for training and prediction.
         """
         # YOUR CODE HERE
+        prepro = nn_lib.Preprocessor(X_raw)
+        X = prepro.apply(X_raw)
 
-        return  # YOUR CLEAN DATA AS A NUMPY ARRAY
+        return  X# YOUR CLEAN DATA AS A NUMPY ARRAY
 
     def fit(self, X_raw, y_raw):
         """Classifier training function.
@@ -50,6 +62,20 @@ class ClaimClassifier:
         # REMEMBER TO HAVE THE FOLLOWING LINE SOMEWHERE IN THE CODE
         # X_clean = self._preprocessor(X_raw)
         # YOUR CODE HERE
+        X_clean = self._preprocessor(X_raw)
+        # print(X_clean.shape)
+        # print(y_raw.shape)
+        trainer = nn_lib.Trainer(
+            network=self.claimNN,
+            batch_size=8,
+            nb_epoch=1000,
+            learning_rate=0.01,
+            loss_fun="cross_entropy",
+            shuffle_flag=True,
+        )
+        y_raw = y_raw.reshape(-1,1)
+        print(y_raw.shape)
+        trainer.train(X_clean,y_raw)
         pass
 
     def predict(self, X_raw):
@@ -69,13 +95,14 @@ class ClaimClassifier:
             values corresponding to the probability of beloning to the
             POSITIVE class (that had accidents)
         """
-
         # REMEMBER TO HAVE THE FOLLOWING LINE SOMEWHERE IN THE CODE
         # X_clean = self._preprocessor(X_raw)
 
         # YOUR CODE HERE
 
-        return  # YOUR NUMPY ARRAY
+        X_clean = self._preprocessor(X_raw)
+        preds = self.claimNN(X_clean).argmax(axis=1).squeeze()
+        return  preds# YOUR NUMPY ARRAY
 
     def evaluate_architecture(self):
         """Architecture evaluation utility.
@@ -86,6 +113,7 @@ class ClaimClassifier:
         You can use external libraries such as scikit-learn for this
         if necessary.
         """
+
         pass
 
     def save_model(self):
@@ -103,3 +131,16 @@ def ClaimClassifierHyperParameterSearch():  # ENSURE TO ADD IN WHATEVER INPUTS Y
     """
 
     return  # Return the chosen hyper parameters
+
+a = ClaimClassifier()
+split_index = int(0.8*a.data.shape[0])
+x_train = a.data[1:split_index,0:10]
+y_train = a.data[1:split_index,-1]
+x_val = a.data[split_index:,0:10]
+y_val = a.data[split_index:,-1]
+a.fit(x_train,y_train)
+
+predicted_y = a.predict(x_val)
+# targets = y_val.argmax(axis=1).squeeze()
+accuracy = (predicted_y == y_val).mean()
+print(accuracy)
