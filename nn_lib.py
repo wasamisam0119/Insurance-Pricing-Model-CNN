@@ -136,7 +136,6 @@ class ReluLayer(Layer):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        # TODO We maybe should use copy() if we need to use grad_z in the function that called backward.
         grad_z[self._cache_current <= 0] = 0
         return grad_z
         #######################################################################
@@ -299,7 +298,7 @@ class MultiLayerNetwork(object):
             x = layer.forward(x)
             # If we have an activation function we run it
             if f_activation is not None:
-                f_activation.forward(x)
+                x = f_activation.forward(x)
         return x
         #######################################################################
         #                       ** END OF YOUR CODE **
@@ -603,7 +602,7 @@ def example_main():
         nb_epoch=1000,
         learning_rate=0.01,
         loss_fun="cross_entropy",
-        shuffle_flag=True,
+        shuffle_flag=False,
     )
 
     trainer.train(x_train_pre, y_train)
