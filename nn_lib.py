@@ -299,7 +299,7 @@ class MultiLayerNetwork(object):
             x = layer.forward(x)
             # If we have an activation function we run it
             if f_activation is not None:
-                f_activation.forward(x)
+                x = f_activation.forward(x)
         return x
         #######################################################################
         #                       ** END OF YOUR CODE **
