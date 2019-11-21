@@ -4,6 +4,7 @@ from sklearn.preprocessing import OneHotEncoder
 import pickle
 import numpy as np
 import pandas as pd
+from keras.utils import to_categorical
 
 
 def fit_and_calibrate_classifier(classifier, X, y):
@@ -158,6 +159,32 @@ class PricingModel():
 
 # pd.re
 
-data = np.genfromtxt('part3_data.csv',delimiter=',', dtype=object)
-df = pd.DataFrame(data)
-print(data)
+# data = np.genfromtxt('part3_data.csv',delimiter=',', dtype=object)
+df = pd.read_csv('part3_data.csv')
+# print(data)
+# encoded = to_categorical(data, dtype=object)
+# print(encoded)
+
+# from sklearn.preprocessing import LabelEncoder
+# from sklearn.preprocessing import OneHotEncoder
+
+categorical_feature_names = ['pol_coverage', 'pol_pay_freq', 'pol_usage', 'drv_drv2', 'drv_sex1', 'drv_sex2', 'vh_make',
+                             'vh_model', 'vh_type']
+
+
+print(df)
+
+encoded_features = pd.get_dummies(df[categorical_feature_names])
+df.drop(categorical_feature_names, axis=1, inplace=True)
+
+# label_encoder = LabelEncoder()
+# df
+# integer_encoded = label_encoder.fit_transform(df[df['pol_coverage',]])
+
+# onehot_encoder = OneHotEncoder(sparse=False)
+#
+# integer_encoded = integer_encoded.reshape(len(integer_encoded), 1)
+# onehot_encoded = onehot_encoder.fit_transform(integer_encoded)
+print(encoded_features)
+fixed_df = pd.concat([df,encoded_features], axis=1)
+print(fixed_df.shape)
