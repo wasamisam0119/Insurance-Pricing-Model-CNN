@@ -3,7 +3,7 @@ import pickle
 import pandas as pd
 import nn_lib
 import matplotlib.pyplot as plt
-from tensorflow.keras.models import Sequential 
+from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense,Activation,Dropout
 import tensorflow.keras as keras
 import sklearn.metrics as metrics
@@ -19,11 +19,12 @@ import datetime
 
 
 class ClaimClassifier:
-    def __init__(self,epochs=30,batch_size=32):
+    def __init__(self, preprocessor, epochs=30, batch_size=32, optimizer = 'Adam'):
         """
         Feel free to alter this as you wish, adding instance variables as
         necessary. 
         """
+        self.prepro = preprocessor
         #self.claimNN = nn_lib.MultiLayerNetwork(input_dim, neurons, activations)
         self.epochs = epochs
         self.batch_size = batch_size
@@ -34,11 +35,11 @@ class ClaimClassifier:
         self.model.add(Dense(units=1, activation='sigmoid'))
 
 
-        self.model.compile(optimizer='SGD',
+        self.model.compile(optimizer=optimizer,
               loss='binary_crossentropy',
               metrics=['accuracy']) 
 
-        self.predition = np.array([])
+        self.prediction = np.array([])
 
 
     def _preprocessor(self, X_raw):
@@ -58,8 +59,7 @@ class ClaimClassifier:
             A clean data set that is used for training and prediction.
         """
         # YOUR CODE HERE
-        prepro = nn_lib.Preprocessor(X_raw)
-        X = prepro.apply(X_raw)
+        X = self.prepro.apply(X_raw)
 
         return  X
 
@@ -78,7 +78,8 @@ class ClaimClassifier:
         Returns
         -------
         """
-        self.model.fit(X_clean,y_raw, epochs=self.epochs, batch_size=self.batch_size)
+        X = self._preprocessor(X_raw)
+        self.model.fit(X, y_raw, epochs=self.epochs, batch_size=self.batch_size)
 
         """
         trainer = nn_lib.Trainer(
@@ -111,8 +112,8 @@ class ClaimClassifier:
         """
         # REMEMBER TO HAVE THE FOLLOWING LINE SOMEWHERE IN THE CODE
         # YOUR CODE HERE
-
-        preds = self.model.predict(X_raw, batch_size=self.batch_size)
+        X = self._preprocessor(X_raw)
+        preds = self.model.predict(X, batch_size=self.batch_size)
         self.predition = preds
         #preds = self.claimNN(X_clean).argmax(axis=1).squeeze()
         return  preds# YOUR NUMPY ARRAY
@@ -134,7 +135,7 @@ class ClaimClassifier:
         plot_roc(y_val,predicted_y)
         fpr, tpr, threshold = metrics.roc_curve(y_val, predicted_y)
         auc = metrics.auc(fpr, tpr)
-
+        x_val = self._preprocessor(x_val)
         best_threshold = threshold[np.argmax(tpr - fpr)]
         y_pred=(predicted_y>best_threshold) #classify to label
         ########################
@@ -156,7 +157,7 @@ def ClaimClassifierHyperParameterSearch(x_train,y_train, estimator, param_grid):
     print (now.strftime("%Y-%m-%d %H:%M:%S"))
 
 
-    grid = GridSearchCV(estimator=model, param_grid=param_grid, n_jobs=-1,refit='roc_auc',scoring=['roc_auc','accuracy'])
+    grid = GridSearchCV(estimator=estimator, param_grid=param_grid, n_jobs=-1,refit='roc_auc',scoring=['roc_auc','accuracy'])
     grid_result = grid.fit(x_train,y_train) 
     print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
     
@@ -167,6 +168,7 @@ def ClaimClassifierHyperParameterSearch(x_train,y_train, estimator, param_grid):
     print (now.strftime("%Y-%m-%d %H:%M:%S"))
 
     return grid_result.best_params_
+
 
 def plot_roc(y_val,predicted_y):
 
@@ -184,6 +186,7 @@ def plot_roc(y_val,predicted_y):
     plt.xlabel('False Positive Rate')
     plt.show()
 
+
 def create_model(optimizer = 'SGD'):
 
     
@@ -194,28 +197,38 @@ def create_model(optimizer = 'SGD'):
 
     model.compile(optimizer=optimizer,loss='binary_crossentropy',metrics=['accuracy']) 
     return model
+
+
 ##################################################
 ##########Test code: Uncomment if you want test the code
-"""
+
 data = np.genfromtxt('part2_data.csv',delimiter=',')
-a = ClaimClassifier(30,32)
+
 split_index = int(0.8*data.shape[0])
-#process_input= a._preprocessor(data[1:,:9])
+# process_input= a._preprocessor(data[1:,:9])
 
 y_train = data[1:split_index,-1]
-x_train = process_input[:split_index-1,:]
+x_train = data[1:split_index,:9]
 print(x_train.shape)
 print(y_train.shape)
-x_val = process_input[split_index-1:,:]
+x_val = data[split_index:,:9]
 y_val = data[split_index:,-1]
+
+preprocessor = nn_lib.Preprocessor(x_train)
+
+a = ClaimClassifier(preprocessor, 30, 32)
 
 a.fit(x_train,y_train)
 predicted_y = a.predict(x_val)
 print("AUC score is %.3f"%a.evaluate_architecture(x_val,y_val,predicted_y))
-"""
+# a.save_model()
+
 #######################################################
-## Parameter tuning---------Grid Search 
+## Parameter tuning---------Grid Search
+
+
 """
+
 optimizer = [ 'SGD', 'Adam' ]
 # grid search epochs, batch size
 epochs = [10,30,50]
@@ -223,6 +236,9 @@ batch_size = [4,8,16,32]
 #batch_size = [32]
 param_grid = dict(epochs=epochs, batch_size=batch_size,optimizer=optimizer)
 #param_grid = dict(epochs=epochs, batch_size=batch_size)
+model = create_model()
+ClaimClassifierHyperParameterSearch(x_train,y_train,model,param_grid)
+
 grid = GridSearchCV(estimator=model, param_grid=param_grid, n_jobs=-1,refit='roc_auc',scoring=['roc_auc','accuracy'])
 grid_result = grid.fit(x_train,y_train) 
 print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
