@@ -1,7 +1,9 @@
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder
 import pickle
 import numpy as np
+import pandas as pd
 
 
 def fit_and_calibrate_classifier(classifier, X, y):
@@ -61,6 +63,7 @@ class PricingModel():
         X: ndarray
             A clean data set that is used for training and prediction.
         """
+        # pd.DataFrame
         # =============================================================
         # YOUR CODE HERE
 
@@ -152,3 +155,9 @@ class PricingModel():
         # =============================================================
         with open('part3_pricing_model.pickle', 'wb') as target:
             pickle.dump(self, target)
+
+# pd.re
+
+data = np.genfromtxt('part3_data.csv',delimiter=',', dtype=object)
+df = pd.DataFrame(data)
+print(data)
