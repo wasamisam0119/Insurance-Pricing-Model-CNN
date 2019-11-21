@@ -19,7 +19,7 @@ import datetime
 
 
 class ClaimClassifier:
-    def __init__(self,epochs,batch_size):
+    def __init__(self,epochs=30,batch_size=32):
         """
         Feel free to alter this as you wish, adding instance variables as
         necessary. 
