@@ -6,8 +6,8 @@ import pickle
 import numpy as np
 import pandas as pd
 import nn_lib
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+from keras.models import Sequential
+from keras.layers import Dense
 import sklearn.metrics as metrics
 from part2_claim_classifier import plot_roc
 import tensorflow as tf
@@ -311,7 +311,7 @@ def train_model():
     pm.save_model()
 
 
-# evaluate_model()
+evaluate_model()
 train_model()
 
 
