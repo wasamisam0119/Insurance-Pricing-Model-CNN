@@ -133,12 +133,13 @@ class PricingModel():
         """
         nnz = np.where(claims_raw != 0)[0]
         self.y_mean = np.mean(claims_raw[nnz])
+        # print(claims_raw, self.y_mean)
         # =============================================================
         # REMEMBER TO A SIMILAR LINE TO THE FOLLOWING SOMEWHERE IN THE CODE
         X_clean = self._preprocessor(X_raw)
         # THE FOLLOWING GETS CALLED IF YOU WISH TO CALIBRATE YOUR PROBABILITES
         if self.calibrate:
-            print(1)
+            # print(1)
             self.base_classifier = fit_and_calibrate_classifier(
                 self.base_classifier, X_clean, y_raw)
         else:
@@ -188,8 +189,9 @@ class PricingModel():
         # =============================================================
         # REMEMBER TO INCLUDE ANY PRICING STRATEGY HERE.
         # For example you could scale all your prices down by a factor
-
-        return self.predict_claim_probability(X_raw) * self.y_mean
+        # print('mean', self.y_mean)
+        factor = 1.1
+        return np.squeeze(self.predict_claim_probability(X_raw) * self.y_mean * factor)
 
     def evaluate_architecture(self,x_val,y_val,predicted_y):
         """Architecture evaluation utility.
@@ -216,7 +218,7 @@ class PricingModel():
         return auc
 
     def save_model(self):
-        self.base_classifier.save('part3_model.h5')  # creates a HDF5 file 'my_model.h5'
+        self.base_classifier.save('part3_pricing_model.h5')  # creates a HDF5 file 'my_model.h5'
         del self.base_classifier
 
     def warp(self, new_model):
@@ -224,11 +226,12 @@ class PricingModel():
 
 
 def load_model():
-    model = tf.keras.models.load_model('part3_model.h5')
+    model = tf.keras.models.load_model('part3_pricing_model.h5')
     df = pd.read_csv('part3_data.csv').sample(frac=1)
     x_train = df[df.columns[:-2]].to_numpy()
     y_train = df[df.columns[-1]].to_numpy()
-    claim_train = df[df.columns[-2]].to_numpy()
+    claim_train = np.expand_dims(df[df.columns[-2]].to_numpy(), axis=1)
+    print('SHAPEEEEEEE', claim_train.shape)
     numerical_features_names_sel = ['pol_bonus', 'pol_duration', 'pol_sit_duration', 'drv_age1', 'drv_age2',
                                     'vh_age', 'vh_cyl', 'vh_value', 'town_mean_altitude', 'population', 'vh_speed',
                                     'vh_weight']
@@ -244,6 +247,9 @@ def load_model():
     preprocessor = nn_lib.Preprocessor(num_features)
     pm = PricingModel(preprocessor=preprocessor, imputer=imp, encoder=le, categorical=categorical_feature_names_sel,
                       numerical=numerical_features_names_sel)
+    nnz = np.where(claim_train != 0)[0]
+    pm.y_mean = np.mean(claim_train[nnz])
+    print(pm.y_mean)
     pm.warp(model)
     return pm
 
@@ -251,16 +257,16 @@ def load_model():
 def evaluate_model():
     df = pd.read_csv('part3_data.csv').sample(frac=1)
     split_index = int(0.8*df.shape[0])
-    print(df.head())
+    # print(df.head())
     df_train = df.iloc[:split_index, :]
     df_test = df.iloc[split_index:, :]
     x_train = df_train[df_train.columns[:-2]].to_numpy()
     y_train = df_train[df_train.columns[-1]].to_numpy()
-    print(y_train)
+    # print(y_train)
     claim_train = df_train[df_train.columns[-2]].to_numpy()
-    print(x_train)
-    print(y_train)
-    print(claim_train)
+    # print(x_train)
+    # print(y_train)
+    # print(claim_train)
     x_test = df_test[df_test.columns[:-2]].to_numpy()
     y_test = df_test[df_test.columns[-1]].to_numpy()
     claim_test = df_test[df_test.columns[-2]].to_numpy()
@@ -279,7 +285,7 @@ def evaluate_model():
     preprocessor = nn_lib.Preprocessor(num_features)
     pm = PricingModel(preprocessor=preprocessor, imputer=imp, encoder=le, categorical=categorical_feature_names_sel,
                       numerical=numerical_features_names_sel)
-    print(y_test.max(), claim_test.max())
+    # print(y_test.max(), claim_test.max())
     pm.fit(x_train, y_train, claim_train)
     predicted_y = pm.predict_claim_probability(x_test)
     print(predicted_y)
