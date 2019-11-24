@@ -311,7 +311,7 @@ def train_model():
     pm.save_model()
 
 
-evaluate_model()
-train_model()
+# evaluate_model()
+# train_model()
 
 
