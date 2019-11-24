@@ -3,19 +3,20 @@ import pickle
 import pandas as pd
 import nn_lib
 import matplotlib.pyplot as plt
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense,Activation,Dropout
-import tensorflow.keras as keras
+import keras
+from keras.models import Sequential
+from keras.layers import Dense,Activation,Dropout
 import sklearn.metrics as metrics
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import GridSearchCV
-from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
+from keras.wrappers.scikit_learn import KerasClassifier
 from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import cross_val_score
 from keras.constraints import max_norm
 from sklearn.metrics import roc_auc_score
 from keras.wrappers.scikit_learn import KerasClassifier
 import datetime
+import tensorflow as tf 
 
 
 class ClaimClassifier:
@@ -113,8 +114,10 @@ class ClaimClassifier:
         # REMEMBER TO HAVE THE FOLLOWING LINE SOMEWHERE IN THE CODE
         # YOUR CODE HERE
         X = self._preprocessor(X_raw)
-        preds = self.model.predict(X, batch_size=self.batch_size)
+        pred_prob = self.model.predict(X, batch_size=self.batch_size)
+        preds= self.model.predict_classes(X)
         self.predition = preds
+        self.pred_prob = pred_prob
         #preds = self.claimNN(X_clean).argmax(axis=1).squeeze()
         return  preds# YOUR NUMPY ARRAY
 
@@ -145,8 +148,26 @@ class ClaimClassifier:
         return auc
 
     def save_model(self):
-        with open("part2_claim_classifier.pickle", "wb") as target:
-            pickle.dump(self, target)
+        self.model.save('part2_model.h5')  # creates a HDF5 file 'my_model.h5'
+        del self.model  # deletes the existing model
+
+        # returns a compiled model
+        # identical to the previous one
+        # with open("part2_claim_classifier.pickle", "wb") as target:
+        #     pickle.dump(self, target)
+    def warp(self,new_model):
+        self.model = new_model
+def load_model():
+
+        model = tf.keras.models.load_model('part2_model.h5')
+        data = np.genfromtxt('part2_data.csv', delimiter=',')
+        split_index = int(0.8 * data.shape[0])
+        y_train = data[1:split_index, -1]
+        x_train = data[1:split_index, :9]
+        preprocessor = nn_lib.Preprocessor(x_train)
+        m = ClaimClassifier(preprocessor)
+        m.warp(model)
+        return m
 
 
 """Grid search for hyper parameters and optimizers ranked by auc score"""
@@ -201,12 +222,10 @@ def create_model(optimizer = 'SGD'):
 
 ##################################################
 ##########Test code: Uncomment if you want test the code
-
+"""
 data = np.genfromtxt('part2_data.csv',delimiter=',')
 
 split_index = int(0.8*data.shape[0])
-# process_input= a._preprocessor(data[1:,:9])
-
 y_train = data[1:split_index,-1]
 x_train = data[1:split_index,:9]
 print(x_train.shape)
@@ -215,14 +234,18 @@ x_val = data[split_index:,:9]
 y_val = data[split_index:,-1]
 
 preprocessor = nn_lib.Preprocessor(x_train)
-
 a = ClaimClassifier(preprocessor, 30, 32)
 
 a.fit(x_train,y_train)
-predicted_y = a.predict(x_val)
-print("AUC score is %.3f"%a.evaluate_architecture(x_val,y_val,predicted_y))
+a.save_model()
+s = load_model()
+predicted_y = s.predict(x_val)
+
+
+print("AUC score is %.3f"%s.evaluate_architecture(x_val,y_val,predicted_y))
 # a.save_model()
 
+"""
 #######################################################
 ## Parameter tuning---------Grid Search
 

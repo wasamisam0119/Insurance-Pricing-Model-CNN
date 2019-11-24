@@ -157,7 +157,6 @@ class PricingModel():
         with open('part3_pricing_model.pickle', 'wb') as target:
             pickle.dump(self, target)
 
-# pd.re
 
 # data = np.genfromtxt('part3_data.csv',delimiter=',', dtype=object)
 df = pd.read_csv('part3_data.csv')
