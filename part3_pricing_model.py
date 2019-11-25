@@ -133,6 +133,7 @@ class PricingModel():
         """
         nnz = np.where(claims_raw != 0)[0]
         self.y_mean = np.mean(claims_raw[nnz])
+        self.median_vh_value = np.median(X_raw[:, 26])
         # print(claims_raw, self.y_mean)
         # =============================================================
         # REMEMBER TO A SIMILAR LINE TO THE FOLLOWING SOMEWHERE IN THE CODE
@@ -189,11 +190,22 @@ class PricingModel():
         # =============================================================
         # REMEMBER TO INCLUDE ANY PRICING STRATEGY HERE.
         # For example you could scale all your prices down by a factor
-        # print('mean', self.y_mean)
-        factor = 1.1
-        return np.squeeze(self.predict_claim_probability(X_raw) * self.y_mean * factor)
+        columns = ['id_policy', 'pol_bonus', 'pol_coverage', 'pol_duration',
+                   'pol_sit_duration', 'pol_pay_freq', 'pol_payd', 'pol_usage',
+                   'pol_insee_code', 'drv_drv2', 'drv_age1', 'drv_age2', 'drv_sex1',
+                   'drv_sex2', 'drv_age_lic1', 'drv_age_lic2', 'vh_age', 'vh_cyl',
+                   'vh_din', 'vh_fuel', 'vh_make', 'vh_model', 'vh_sale_begin',
+                   'vh_sale_end', 'vh_speed', 'vh_type', 'vh_value', 'vh_weight',
+                   'town_mean_altitude', 'town_surface_area', 'population', 'commune_code',
+                   'canton_code', 'city_district_code', 'regional_department_code',
+                   ]
+        df = pd.DataFrame(data=X_raw, columns=columns)
+        factors = np.expand_dims(np.array(df['vh_value'] / self.median_vh_value), axis=1)
+        np.maximum(factors, 1, factors)
+        np.minimum(factors, 2, factors)
+        return np.squeeze(self.predict_claim_probability(X_raw) * self.y_mean * factors)
 
-    def evaluate_architecture(self,x_val,y_val,predicted_y):
+    def evaluate_architecture(self, x_val, y_val, predicted_y):
         """Architecture evaluation utility.
 
         Populate this function with evaluation utilities for your
@@ -231,7 +243,6 @@ def load_model():
     x_train = df[df.columns[:-2]].to_numpy()
     y_train = df[df.columns[-1]].to_numpy()
     claim_train = np.expand_dims(df[df.columns[-2]].to_numpy(), axis=1)
-    print('SHAPEEEEEEE', claim_train.shape)
     numerical_features_names_sel = ['pol_bonus', 'pol_duration', 'pol_sit_duration', 'drv_age1', 'drv_age2',
                                     'vh_age', 'vh_cyl', 'vh_value', 'town_mean_altitude', 'population', 'vh_speed',
                                     'vh_weight']
@@ -249,7 +260,7 @@ def load_model():
                       numerical=numerical_features_names_sel)
     nnz = np.where(claim_train != 0)[0]
     pm.y_mean = np.mean(claim_train[nnz])
-    print(pm.y_mean)
+    pm.median_vh_value = df['vh_value'].median()
     pm.warp(model)
     return pm
 
