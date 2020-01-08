@@ -2,7 +2,7 @@
 
 ### Part1:
 
-We finished all of the part1 and it has successfully passed on LabTS:)
+We implemented a neural network library and it has successfully passed on LabTS:)
 
 ### Part2:
 
